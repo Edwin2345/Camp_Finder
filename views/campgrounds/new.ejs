@@ -1,14 +1,32 @@
 <% layout('./layout/boilerplate.ejs') %>
-<form action="/campgrounds/new" method="post">
-    <section>
-        <label for="title">Campground Title</label>
-        <input type="text" id="title" name="campground[title]">
+<div class="row">
+  <h1 class="text-center">New Campground</h1>
+  <form class="col-8 offset-2" action="/campgrounds/new" method="post">
+    <section class="my-4">
+        <label class="form-label fw-bold" for="title">Campground Title</label>
+        <input required class="form-control border border-black fw-medium" type="text" id="title" name="campground[title]">
     </section>
-    <section>
-        <label for="location">Campground Location</label>
-        <input type="text" id="location" name="campground[location]">
+    <section class="my-4">
+        <label class="form-label fw-bold" for="location">Campground Location</label>
+        <input require class="form-control border border-black fw-medium" type="text" id="location" name="campground[location]">
     </section>
-    <button>Create Campground</button>
+    <section class="my-4">
+        <label class="form-label fw-bold" for="image">Image URL</label>
+        <input required class="form-control border border-black fw-medium" type="text" id="image" name="campground[image]">
+    </section>
+    <label class="form-label fw-bold" for="price">Price Per Night</label>
+    <div class="input-group">
+        <span class="input-group-text border border-black">$</span>
+        <input  required type="number" min="0" placeholder="0.00" step="0.01" class="form-control border border-black fw-medium" aria-label="Amount (to the nearest dollar)" id="price" name="campground[price]">
+    </div>
+    <section class="my-4">
+        <label class="form-label fw-bold" for="description">Description</label>
+        <textarea class="form-control border border-black fw-medium" type="text" id="description" name="campground[description]" required></textarea>
+    </section>
+    <button class="btn btn-success py-2 my-2">Create Campground</button>
+    <br>
+    <br>
+    <h5> <a href="/campgrounds">All Campgrounds</a> </h5>
 </form>
-<br>
-<h3> <a href="/campgrounds">All Campgrounds</a> </h3>
+</div>
+

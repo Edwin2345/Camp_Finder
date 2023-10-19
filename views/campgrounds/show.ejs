@@ -1,9 +1,20 @@
 <% layout('./layout/boilerplate.ejs') %>
-<h1><%= camp.title %></h1>
-<h2>Location: <%= camp.location %></h2>
-<h3><a href="/campgrounds/<%= camp._id %>/edit">Edit Campground</a></h3>
-<form action="/campgrounds/<%= camp._id %>?_method=DELETE" method="post"> 
-    <button>Delete Campground</button>
-</form>
-
-<h3><a href="/campgrounds">Back to All</a></h3>
+<div class="row mb-5">
+  <div class="card col-lg-6 offset-lg-3">
+    <img src="<%= camp.image %>" alt="camp image" class="mt-3 card-img-top">
+    <div class="card-body">
+      <h2 class="card-title"><%= camp.title %></h2>
+      <p class="card-tex fw-semibold"><%=camp.description%></p>
+    </div>
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item fs-5 fw-semibold"><%= camp.location %></li>
+      <li class="list-group-item fs-5 fw-semibold">$<%=camp.price.toFixed(2)%>/night</li>
+    </ul>
+    <div class="card-body">
+      <a href="/campgrounds/<%= camp._id %>/edit" class="btn btn-primary py-2 px-4 fs-5">Edit</a>
+      <form class="d-inline" action="/campgrounds/<%= camp._id %>?_method=DELETE" method="post"">
+        <button class="d-inline mx-4 btn btn-danger py-2 px-4 fs-5">Delete</a>
+      </form>
+    </div>
+  </div>
+</div>
