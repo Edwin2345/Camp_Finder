@@ -1,9 +1,13 @@
-import express, { Application, Request, Response } from 'express';
+import express, { Application, Request, Response, NextFunction } from 'express';
 const path = require("path");
 import { Schema, model, connect } from 'mongoose';
+import {ExpressError} from "./utils/ExpressError";
+import { wrapAsync } from './utils/wrapAsync';
 const Campground = require("./models/campground");
+import { campgroundValidationSchema, joinErrors } from './utils/validate_schema/validations';
 const methodOverrride = require("method-override");
 const ejsMate = require("ejs-mate");
+
 
 
 const app: Application = express();
@@ -31,58 +35,85 @@ app.use(express.urlencoded({extended: true}));
 //Method overrride Middleware
 app.use(methodOverrride("_method"));
 
+//validatecampground middleware
+
+function validateCampground(req: Request, res: Response, next: NextFunction){
+     const {error} = campgroundValidationSchema.validate(req.body);
+     if(error){
+       const errorStr  = joinErrors(error.details);
+       console.log(errorStr);
+       throw new ExpressError(errorStr, 400);
+     } else{
+        next();
+     }
+}
 
 //GET ROUTES: PAGES
 app.get('/', (req: Request, res: Response): void => {
     res.render("home.ejs");
 });
 
-app.get("/campgrounds", async(req: Request, res: Response) => {
+app.get("/campgrounds", wrapAsync(async(req: Request, res: Response) => {
     const campArr = await Campground.find();
     res.render("campgrounds/index.ejs", {campArr});
-});
+}));
 
-app.get("/campgrounds/new", async(req: Request, res: Response) => {
+app.get("/campgrounds/new", (req: Request, res: Response) => {
     res.render("campgrounds/new.ejs");
 });
 
-app.get("/campgrounds/:id/edit", async(req: Request, res: Response) => {
+app.get("/campgrounds/:id/edit", wrapAsync(async(req: Request, res: Response) => {
     const {id} = req.params;
     const camp = await Campground.findById(id);
     res.render("campgrounds/edit.ejs", {camp});
-});
+}));
 
 
-app.get("/campgrounds/:id", async(req: Request, res: Response) => {
+app.get("/campgrounds/:id", wrapAsync(async(req: Request, res: Response) => {
     const {id} = req.params;
     const camp = await Campground.findById(id);
     res.render("campgrounds/show.ejs", {camp});
-});
-
+}));
 
 
 //Create campground route
-app.post("/campgrounds/new", async(req: Request, res: Response) => {
+app.post("/campgrounds/new", validateCampground, wrapAsync(async(req: Request, res: Response) => {
    const newCamp = new Campground(req.body.campground)
    await newCamp.save();
    res.redirect(`/campgrounds/${newCamp._id}`)
-});
+}));
 
 
 //Update campgrounds route
-app.put("/campgrounds/:id", async(req: Request, res: Response) => {
+app.put("/campgrounds/:id", validateCampground, wrapAsync(async(req: Request, res: Response) => {
     const {id} = req.params;
     const updatedCamp = await Campground.findByIdAndUpdate(id, {...req.body.campground});
     res.redirect(`/campgrounds/${updatedCamp._id}`)
- });
+ }));
 
 
 //Delete Campground route
-app.delete("/campgrounds/:id", async(req: Request, res: Response) => {
+app.delete("/campgrounds/:id", wrapAsync(async(req: Request, res: Response) => {
     const {id} = req.params;
     const deletedCamp = await Campground.findByIdAndDelete(id, {...req.body.campground});
     res.redirect(`/campgrounds`)
- });
+ }));
+
+
+ //Unkown Route handler
+ app.all("*", wrapAsync((req: Request, res: Response, next: NextFunction): void => {
+    throw new ExpressError("Page Does Not Exist", 404)
+}));
+
+ //ERROR HANDLING
+app.use((err: Error | ExpressError, req: Request, res: Response, next: NextFunction): void => {
+    if( "statusCode" in err ){
+        res.status(err.statusCode).render("error.ejs", {err});
+     }else{
+         res.status(500).render("error.ejs", {err});
+     }
+     next(err);
+})
  
 
 
