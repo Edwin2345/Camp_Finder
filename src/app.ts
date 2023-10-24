@@ -4,7 +4,8 @@ import { Schema, model, connect } from 'mongoose';
 import {ExpressError} from "./utils/ExpressError";
 import { wrapAsync } from './utils/wrapAsync';
 const Campground = require("./models/campground");
-import { campgroundValidationSchema, joinErrors } from './utils/validate_schema/validations';
+const Review = require("./models/review")
+import { campgroundValidationSchema, joinErrors, reviewsValidationSchema } from './utils/validate_schema/validations';
 const methodOverrride = require("method-override");
 const ejsMate = require("ejs-mate");
 
@@ -35,8 +36,7 @@ app.use(express.urlencoded({extended: true}));
 //Method overrride Middleware
 app.use(methodOverrride("_method"));
 
-//validatecampground middleware
-
+// VALIDATION MIDDLEWARES
 function validateCampground(req: Request, res: Response, next: NextFunction){
      const {error} = campgroundValidationSchema.validate(req.body);
      if(error){
@@ -46,6 +46,17 @@ function validateCampground(req: Request, res: Response, next: NextFunction){
      } else{
         next();
      }
+}
+
+function validateReview(req: Request, res: Response, next: NextFunction){
+    const {error} = reviewsValidationSchema.validate(req.body);
+    if(error){
+      const errorStr  = joinErrors(error.details);
+      console.log(errorStr);
+      throw new ExpressError(errorStr, 400);
+    } else{
+       next();
+    }
 }
 
 //GET ROUTES: PAGES
@@ -71,9 +82,12 @@ app.get("/campgrounds/:id/edit", wrapAsync(async(req: Request, res: Response) =>
 
 app.get("/campgrounds/:id", wrapAsync(async(req: Request, res: Response) => {
     const {id} = req.params;
-    const camp = await Campground.findById(id);
+    const camp = await Campground.findById(id).populate("reviews");
     res.render("campgrounds/show.ejs", {camp});
 }));
+
+
+//##############################################################################################
 
 
 //Create campground route
@@ -82,6 +96,20 @@ app.post("/campgrounds/new", validateCampground, wrapAsync(async(req: Request, r
    await newCamp.save();
    res.redirect(`/campgrounds/${newCamp._id}`)
 }));
+
+
+app.post("/campgrounds/:campid/reviews/new", validateReview, wrapAsync(async(req: Request, res: Response) => {
+    //console.log(req.body.review);
+    const {campid} = req.params;
+    const camp = await Campground.findById(campid);
+    const {rating, body} = req.body.review;
+    const newReview = new Review({rating, body});
+    camp.reviews.push(newReview._id);
+    await newReview.save();
+    await camp.save();
+    console.log(newReview)
+    res.redirect(`/campgrounds/${camp._id}`);
+ }))
 
 
 //Update campgrounds route
@@ -99,6 +127,14 @@ app.delete("/campgrounds/:id", wrapAsync(async(req: Request, res: Response) => {
     res.redirect(`/campgrounds`)
  }));
 
+
+//Delete Review Rout
+app.delete("/campgrounds/:campid/reviews/:reviewid",  wrapAsync(async(req: Request, res: Response) => {
+    const {campid, reviewid} = req.params;
+    const camp = await Campground.findByIdAndUpdate(campid, {$pull: {reviews: reviewid}}, {new: true});
+    await Review.findByIdAndDelete(reviewid);
+    res.redirect(`/campgrounds/${camp._id}`);
+}))
 
  //Unkown Route handler
  app.all("*", wrapAsync((req: Request, res: Response, next: NextFunction): void => {
