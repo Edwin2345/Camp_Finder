@@ -4,6 +4,7 @@ const Campground = require("../models/campground");
 
 import {ExpressError} from "../utils/ExpressError";
 import { wrapAsync } from '../utils/wrapAsync';
+const {isLoggedIn} = require("../utils/middleware");
 
 const campgroundRouter = express.Router();
 
@@ -29,11 +30,11 @@ campgroundRouter.get("/", wrapAsync(async(req: Request, res: Response) => {
     res.render("campgrounds/index.ejs", {campArr});
 }));
 
-campgroundRouter.get("/new", (req: Request, res: Response) => {
+campgroundRouter.get("/new", isLoggedIn, (req: Request, res: Response) => {
     res.render("campgrounds/new.ejs");
 });
 
-campgroundRouter.get("/:id/edit", wrapAsync(async(req: Request, res: Response) => {
+campgroundRouter.get("/:id/edit", isLoggedIn, wrapAsync(async(req: Request, res: Response) => {
     const {id} = req.params;
     const camp = await Campground.findById(id);
     if(!camp){
@@ -60,7 +61,7 @@ campgroundRouter.get("/:id", wrapAsync(async(req: Request, res: Response) => {
 //OTHER ROUTES
 //###############
 //Create campground route
-campgroundRouter.post("/new", validateCampground, wrapAsync(async(req: Request, res: Response) => {
+campgroundRouter.post("/new", isLoggedIn, validateCampground, wrapAsync(async(req: Request, res: Response) => {
     const newCamp = new Campground(req.body.campground)
     await newCamp.save();
     req.flash("success", `${newCamp.title} Was Created`);
@@ -68,7 +69,7 @@ campgroundRouter.post("/new", validateCampground, wrapAsync(async(req: Request, 
  }));
 
 //Update campgrounds route
-campgroundRouter.put("/:id", validateCampground, wrapAsync(async(req: Request, res: Response) => {
+campgroundRouter.put("/:id", isLoggedIn, validateCampground, wrapAsync(async(req: Request, res: Response) => {
     const {id} = req.params;
     const updatedCamp = await Campground.findByIdAndUpdate(id, {...req.body.campground});
     if(!updatedCamp){
@@ -81,7 +82,7 @@ campgroundRouter.put("/:id", validateCampground, wrapAsync(async(req: Request, r
 
 
 //Delete Campground route
-campgroundRouter.delete("/:id", wrapAsync(async(req: Request, res: Response) => {
+campgroundRouter.delete("/:id", isLoggedIn, wrapAsync(async(req: Request, res: Response) => {
     const {id} = req.params;
     const deletedCamp = await Campground.findByIdAndDelete(id, {...req.body.campground});
     if(!deletedCamp){

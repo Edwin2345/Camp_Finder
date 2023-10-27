@@ -5,7 +5,7 @@ const Review = require("../models/review");
 
 import {ExpressError} from "../utils/ExpressError"
 import { wrapAsync } from '../utils/wrapAsync';
-
+const {isLoggedIn} = require("../utils/middleware");
 
 const reviewsRouter = express.Router({mergeParams: true});
 
@@ -21,7 +21,7 @@ function validateReview(req: Request, res: Response, next: NextFunction){
 }
 
 //Create Reviews Route
-reviewsRouter.post("/new", validateReview, wrapAsync(async(req: Request, res: Response) => {
+reviewsRouter.post("/new",  isLoggedIn, validateReview, wrapAsync(async(req: Request, res: Response) => {
     //console.log(req.body.review);
     const {campid} = req.params;
     const camp = await Campground.findById(campid);
@@ -36,7 +36,7 @@ reviewsRouter.post("/new", validateReview, wrapAsync(async(req: Request, res: Re
 
 
 //Delete Review Route
-reviewsRouter.delete("/:reviewid",  wrapAsync(async(req: Request, res: Response) => {
+reviewsRouter.delete("/:reviewid", isLoggedIn, wrapAsync(async(req: Request, res: Response) => {
     const {campid, reviewid} = req.params;
     const camp = await Campground.findByIdAndUpdate(campid, {$pull: {reviews: reviewid}}, {new: true});
     await Review.findByIdAndDelete(reviewid);
