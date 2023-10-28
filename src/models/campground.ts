@@ -8,6 +8,7 @@ interface ICampground{
     image: string,
     description: string,
     location: string,
+    author: Types.ObjectId
     reviews: Types.ObjectId[];
 }
 
@@ -17,6 +18,10 @@ const campgroundSchema = new Schema<ICampground>({
    image: {type: String},
    description: {type: String},
    location: {type: String},
+   author: {
+    type: Schema.Types.ObjectId,
+    ref: "User"
+  },
    reviews: [
      {
       type: Schema.Types.ObjectId,

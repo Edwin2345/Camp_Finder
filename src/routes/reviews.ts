@@ -5,7 +5,7 @@ const Review = require("../models/review");
 
 import {ExpressError} from "../utils/ExpressError"
 import { wrapAsync } from '../utils/wrapAsync';
-const {isLoggedIn} = require("../utils/middleware");
+const {isLoggedIn, isAuthorReview} = require("../utils/middleware");
 
 const reviewsRouter = express.Router({mergeParams: true});
 
@@ -23,25 +23,39 @@ function validateReview(req: Request, res: Response, next: NextFunction){
 //Create Reviews Route
 reviewsRouter.post("/new",  isLoggedIn, validateReview, wrapAsync(async(req: Request, res: Response) => {
     //console.log(req.body.review);
-    const {campid} = req.params;
-    const camp = await Campground.findById(campid);
-    const {rating, body} = req.body.review;
-    const newReview = new Review({rating, body});
-    camp.reviews.push(newReview._id);
-    await newReview.save();
-    await camp.save();
-    req.flash("success", "New Review Created");
-    res.redirect(`/campgrounds/${camp._id}`);
+    try{
+        const {campid} = req.params;
+        const camp = await Campground.findById(campid);
+        const {rating, body} = req.body.review;
+        const newReview = new Review({rating, body});
+        camp.reviews.push(newReview._id);
+        newReview.author = req.user?._id;
+        await newReview.save();
+        await camp.save();
+        req.flash("success", "New Review Created");
+        res.redirect(`/campgrounds/${camp._id}`);
+    }
+    catch(e){
+        req.flash("error", "Campground does not exist");
+        res.redirect(`/campgrounds`);
+    }
+   
  }))
 
 
 //Delete Review Route
-reviewsRouter.delete("/:reviewid", isLoggedIn, wrapAsync(async(req: Request, res: Response) => {
+reviewsRouter.delete("/:reviewid", isLoggedIn, isAuthorReview, wrapAsync(async(req: Request, res: Response) => {
     const {campid, reviewid} = req.params;
-    const camp = await Campground.findByIdAndUpdate(campid, {$pull: {reviews: reviewid}}, {new: true});
-    await Review.findByIdAndDelete(reviewid);
-    req.flash("success", "Review Deleted");
-    res.redirect(`/campgrounds/${camp._id}`);
+    try{
+        const camp = await Campground.findByIdAndUpdate(campid, {$pull: {reviews: reviewid}}, {new: true});
+        await Review.findByIdAndDelete(reviewid);
+        req.flash("success", "Review Deleted");
+        res.redirect(`/campgrounds/${camp._id}`);    
+    }
+    catch(e){
+        req.flash("error", "Review Or Campground not found");
+        res.redirect(`/campgrounds`);
+    }
 }))
 
 

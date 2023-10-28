@@ -4,7 +4,7 @@ const Campground = require("../models/campground");
 
 import {ExpressError} from "../utils/ExpressError";
 import { wrapAsync } from '../utils/wrapAsync';
-const {isLoggedIn} = require("../utils/middleware");
+const {isLoggedIn, isAuthorCampground} = require("../utils/middleware");
 
 const campgroundRouter = express.Router();
 
@@ -34,28 +34,44 @@ campgroundRouter.get("/new", isLoggedIn, (req: Request, res: Response) => {
     res.render("campgrounds/new.ejs");
 });
 
-campgroundRouter.get("/:id/edit", isLoggedIn, wrapAsync(async(req: Request, res: Response) => {
+campgroundRouter.get("/:id/edit", isLoggedIn, isAuthorCampground, wrapAsync(async(req: Request, res: Response) => {
     const {id} = req.params;
-    const camp = await Campground.findById(id);
-    if(!camp){
+    try{
+        const camp = await Campground.findById(id);
+        if(!camp){
+           throw new Error()
+        }
+        res.render("campgrounds/edit.ejs", {camp});
+    }
+    catch(e){
         req.flash("error", "Campground Could Not Be Found");
         res.redirect("/campgrounds");
     }
-    res.render("campgrounds/edit.ejs", {camp});
 }));
 
 
 campgroundRouter.get("/:id", wrapAsync(async(req: Request, res: Response) => {
     const {id} = req.params;
-    const camp = await Campground.findById(id).populate("reviews");
-    if(!camp){
+    try{
+        const camp = await Campground.findById(id)
+        .populate({
+           path: "reviews",
+           populate: {
+             path: "author",
+             model: "User"
+           }
+        })
+        .populate("author");
+        if(!camp){
+            throw new Error();
+        }
+        res.render("campgrounds/show.ejs", {camp});
+    }
+    catch(e){
         req.flash("error", "Campground Could Not Be Found");
         res.redirect("/campgrounds");
     }
-    res.render("campgrounds/show.ejs", {camp});
 }));
-
-
 
 
 //OTHER ROUTES
@@ -63,34 +79,46 @@ campgroundRouter.get("/:id", wrapAsync(async(req: Request, res: Response) => {
 //Create campground route
 campgroundRouter.post("/new", isLoggedIn, validateCampground, wrapAsync(async(req: Request, res: Response) => {
     const newCamp = new Campground(req.body.campground)
+    newCamp.author = req.user?._id;
     await newCamp.save();
     req.flash("success", `${newCamp.title} Was Created`);
     res.redirect(`/campgrounds/${newCamp._id}`)
  }));
 
+
 //Update campgrounds route
-campgroundRouter.put("/:id", isLoggedIn, validateCampground, wrapAsync(async(req: Request, res: Response) => {
+campgroundRouter.put("/:id", isLoggedIn, isAuthorCampground, validateCampground, wrapAsync(async(req: Request, res: Response) => {
     const {id} = req.params;
-    const updatedCamp = await Campground.findByIdAndUpdate(id, {...req.body.campground});
-    if(!updatedCamp){
+    try{
+        const updatedCamp = await Campground.findByIdAndUpdate(id, {...req.body.campground});
+        if(!updatedCamp){
+           throw new Error();
+        }
+        req.flash("success", `${updatedCamp.title} Was Updated`);
+        res.redirect(`/campgrounds/${updatedCamp._id}`)
+    }
+    catch(e){
         req.flash("error", "Campground To Be Updated Not Found");
         res.redirect("/campgrounds");
     }
-    req.flash("success", `${updatedCamp.title} Was Updated`);
-    res.redirect(`/campgrounds/${updatedCamp._id}`)
  }));
 
 
 //Delete Campground route
-campgroundRouter.delete("/:id", isLoggedIn, wrapAsync(async(req: Request, res: Response) => {
+campgroundRouter.delete("/:id", isLoggedIn, isAuthorCampground, wrapAsync(async(req: Request, res: Response) => {
     const {id} = req.params;
-    const deletedCamp = await Campground.findByIdAndDelete(id, {...req.body.campground});
-    if(!deletedCamp){
+    try{
+        const deletedCamp = await Campground.findByIdAndDelete(id, {...req.body.campground});
+        if(!deletedCamp){
+          throw new Error();
+        }
+        req.flash("success", `${deletedCamp.title} Was Deleted`);
+        res.redirect(`/campgrounds`)
+    }
+    catch(e){
         req.flash("error", "Campground To Be Deleted Not Found");
         res.redirect("/campgrounds");
     }
-    req.flash("success", `${deletedCamp.title} Was Deleted`);
-    res.redirect(`/campgrounds`)
  }));
 
  module.exports  = campgroundRouter;

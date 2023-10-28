@@ -30,6 +30,7 @@ async function seedDB(){
             title: `${randElement(descriptors)} ${randElement(places)}`,
             location: `${cities[randCityNum].city}, ${cities[randCityNum].state}`,
             image: "https://random.imagecdn.app/700/500",
+            author: "653c0943eabd63f0690a60e4",
             price: randPrice,
             description: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Libero quae ab quia. Alias nihil asperiores totam est beatae, sed, vitae eum, commodi quae esse quidem inventore illo. Neque, sapiente eos?"
         })
@@ -37,6 +38,7 @@ async function seedDB(){
         console.log(camp);
     }
 }
+
 
 seedDB()
 .then(() => {disconnect()} )
