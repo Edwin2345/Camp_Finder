@@ -59,12 +59,17 @@ async function isAuthorReview(req: Request, res: Response, next: NextFunction){
 
 
 
+
+
 function storeReturnToLocally(req: Request, res: Response, next: NextFunction){
    if(req.session.returnTo){
       res.locals.returnTo = req.session.returnTo;
    }
    next();
 }
+
+
+
 
 
 

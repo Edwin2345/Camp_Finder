@@ -24,8 +24,7 @@ export const campgroundValidationSchema = Joi.object({
 
  export const reviewsValidationSchema = Joi.object({
     review: Joi.object({
-      rating: Joi.number().required().min(1).max(5),
+      rating: Joi.number().required().min(0).max(5),
       body: Joi.string().required(), 
     }).required(),
-    amountRange: Joi.number()
  })
