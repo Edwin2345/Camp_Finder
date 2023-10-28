@@ -47,6 +47,17 @@ declare module 'express-session' {
     }
  }
 
+ //Global Types
+declare global {
+    namespace Express {
+      interface User {
+        _id: string
+      }
+    }
+ }
+
+
+
 const sessionOptions = {
     secret: "todoreplacewithsecret",
     resave: false,
