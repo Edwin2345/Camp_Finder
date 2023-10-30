@@ -1,7 +1,13 @@
 import express, { Request, Response, NextFunction } from 'express';
 const Campground = require("../models/campground");
+const {default: multer}  = require('multer')
+const {cloudinary} = require("../cloudinary/index")
 
-
+interface Iimage{
+    url: string,
+    filename: string
+ }
+ 
 
 //GET ROUTE FUNCTIONALITY
 //##########################
@@ -62,9 +68,19 @@ module.exports.campShow = async(req: Request, res: Response) => {
 module.exports.campNew = async(req: Request, res: Response) => {
     const newCamp = new Campground(req.body.campground)
     newCamp.author = req.user?._id;
+    //add images
+    if(req.files){
+        const imgArr = req.files as Array<Express.Multer.File>
+        newCamp.images = imgArr.map((el)=>{
+           return {
+             url: el.path,
+             filename: el.filename
+           }
+        })
+    }
     await newCamp.save();
     req.flash("success", `${newCamp.title} Was Created`);
-    res.redirect(`/campgrounds/${newCamp._id}`)
+    res.redirect(`/campgrounds/${newCamp._id}`);
 }
 
 
@@ -75,11 +91,31 @@ module.exports.campUpdate = async(req: Request, res: Response) => {
         if(!updatedCamp){
            throw new Error();
         }
+        //add images
+        if(req.files){
+            const imgArr = req.files as Array<Express.Multer.File>
+            imgArr.forEach((el)=>{
+                updatedCamp.images.push(
+                 {
+                  url: el.path,
+                  filename: el.filename
+                 }
+                )
+            })
+        }
+        await updatedCamp.save();
+        //delete images
+        if(req.body.deleteImages){
+            for(let img of req.body.deleteImages){
+               await cloudinary.uploader.destroy(img);
+            }
+            await updatedCamp.updateOne({$pull : {images: {filename: {$in: req.body.deleteImages}}}})
+        }
         req.flash("success", `${updatedCamp.title} Was Updated`);
         res.redirect(`/campgrounds/${updatedCamp._id}`)
     }
-    catch(e){
-        req.flash("error", "Campground To Be Updated Not Found");
+    catch(e: any){
+        req.flash("error", e.toString());
         res.redirect("/campgrounds");
     }
  }

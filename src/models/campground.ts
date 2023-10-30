@@ -2,10 +2,15 @@ import { Schema, Model, HydratedDocument, model, connect, Types } from 'mongoose
 const Review = require("./review");
 
 /*1. Create Interface for Document + Model Methods*/
+interface Iimage{
+   url: string,
+   filename: string
+}
+
 interface ICampground{
     title: string,
     price: number,
-    image: string,
+    images: Iimage[],
     description: string,
     location: string,
     author: Types.ObjectId
@@ -15,7 +20,12 @@ interface ICampground{
 const campgroundSchema = new Schema<ICampground>({
    title: {type: String},
    price: {type: Number},
-   image: {type: String},
+   images:  [
+      {
+        url: {type: String},
+        filename: {type: String}
+      }
+   ],
    description: {type: String},
    location: {type: String},
    author: {
@@ -29,6 +39,7 @@ const campgroundSchema = new Schema<ICampground>({
      }
    ]
 })
+
 
 //Middleware to delete reviews associated with campground
 campgroundSchema.post("findOneAndDelete", async function(camp){

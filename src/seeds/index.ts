@@ -29,7 +29,17 @@ async function seedDB(){
         const camp = new Campground({
             title: `${randElement(descriptors)} ${randElement(places)}`,
             location: `${cities[randCityNum].city}, ${cities[randCityNum].state}`,
-            image: "https://random.imagecdn.app/700/500",
+            images: [
+                {
+                  url: 'https://res.cloudinary.com/dcacq2o3b/image/upload/v1698608245/CampFinder/scla5zpuspnglwwsiot4.jpg',
+                  filename: 'CampFinder/scla5zpuspnglwwsiot4',
+                },
+                {
+                  url: 'https://res.cloudinary.com/dcacq2o3b/image/upload/v1698608245/CampFinder/luhg2is7gwyxocgmzu84.jpg',
+                  filename: 'CampFinder/luhg2is7gwyxocgmzu84',
+
+                }
+            ],
             author: "653c0943eabd63f0690a60e4",
             price: randPrice,
             description: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Libero quae ab quia. Alias nihil asperiores totam est beatae, sed, vitae eum, commodi quae esse quidem inventore illo. Neque, sapiente eos?"
