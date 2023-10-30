@@ -5,6 +5,9 @@ import { wrapAsync } from '../utils/wrapAsync';
 const {isLoggedIn, isAuthorCampground} = require("../utils/middleware");
 const {campIndex, campNewForm, campEditForm, campShow, campNew, campUpdate, campDelete} = require("../controllers/campgrounds");
 const campgroundRouter = express.Router();
+const multer  = require('multer')
+const {storage} = require("../cloudinary/index")
+const upload = multer({storage})
 
 
 // VALIDATION 
@@ -25,8 +28,12 @@ campgroundRouter.get("/", wrapAsync(campIndex));
 //New Camp Form and Creation
 campgroundRouter.route("/new")
                 .get(isLoggedIn, campNewForm)
-                .post(isLoggedIn, validateCampground, wrapAsync(campNew));
-
+                .post(isLoggedIn, upload.array("campground[images]", 5), validateCampground, wrapAsync(campNew));
+                /*.post(upload.array("campground[image]", 5), (req: Request, res: Response)=>{
+                   console.log(req.body);
+                   console.log(req.files);
+                   res.redirect("/campgrounds")
+                })*/
 
 //Camp Edit Form
 campgroundRouter.get("/:id/edit", isLoggedIn, isAuthorCampground, wrapAsync(campEditForm));
@@ -35,7 +42,7 @@ campgroundRouter.get("/:id/edit", isLoggedIn, isAuthorCampground, wrapAsync(camp
 //Camp Show, Update, Delete
 campgroundRouter.route("/:id")
                 .get(wrapAsync(campShow))
-                .put(isLoggedIn, isAuthorCampground, validateCampground, wrapAsync(campUpdate))
+                .put(isLoggedIn, isAuthorCampground, upload.array("campground[images]", 5), validateCampground, wrapAsync(campUpdate))
                 .delete(isLoggedIn, isAuthorCampground, wrapAsync(campDelete));
 
 

@@ -1,3 +1,7 @@
+if(process.env.NODE_ENV !== "production"){
+    require("dotenv").config();
+}
+
 import express, { Application, Request, Response, NextFunction } from 'express';
 const path = require("path");
 import { connect } from 'mongoose';
