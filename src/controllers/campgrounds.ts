@@ -1,7 +1,12 @@
 import express, { Request, Response, NextFunction } from 'express';
 const Campground = require("../models/campground");
-const {default: multer}  = require('multer')
-const {cloudinary} = require("../cloudinary/index")
+const {default: multer}  = require('multer');
+const {cloudinary} = require("../cloudinary/index");
+const mbxGeocoding = require("@mapbox/mapbox-sdk/services/geocoding")
+const mapBoxToken = process.env.MAPBOX_TOKEN;
+
+
+const geoCoder = mbxGeocoding({accessToken: mapBoxToken})
 
 interface Iimage{
     url: string,
@@ -66,21 +71,34 @@ module.exports.campShow = async(req: Request, res: Response) => {
 //OTHER CAMP FUNCTIONALITY
 //##########################
 module.exports.campNew = async(req: Request, res: Response) => {
-    const newCamp = new Campground(req.body.campground)
-    newCamp.author = req.user?._id;
-    //add images
-    if(req.files){
-        const imgArr = req.files as Array<Express.Multer.File>
-        newCamp.images = imgArr.map((el)=>{
-           return {
-             url: el.path,
-             filename: el.filename
-           }
-        })
+    try{
+       const geoResult = await geoCoder.forwardGeocode({
+            query: req.body.campground.location,
+            limit: 1
+        }).send();
+        const newCamp = new Campground(req.body.campground)
+        if(geoResult){
+            newCamp.geometry = geoResult.body.features[0].geometry;
+        }
+        newCamp.author = req.user?._id;
+        //add images
+        if(req.files){
+            const imgArr = req.files as Array<Express.Multer.File>
+            newCamp.images = imgArr.map((el)=>{
+               return {
+                 url: el.path,
+                 filename: el.filename
+               }
+            })
+        }
+        await newCamp.save();
+        req.flash("success", `${newCamp.title} Was Created`);
+        //res.redirect(`/campgrounds/${newCamp._id}`);
     }
-    await newCamp.save();
-    req.flash("success", `${newCamp.title} Was Created`);
-    res.redirect(`/campgrounds/${newCamp._id}`);
+    catch(e: any){
+        req.flash("error", e.toString());
+        res.redirect("/campgrounds");
+    } 
 }
 
 
