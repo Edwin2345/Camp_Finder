@@ -93,7 +93,7 @@ module.exports.campNew = async(req: Request, res: Response) => {
         }
         await newCamp.save();
         req.flash("success", `${newCamp.title} Was Created`);
-        //res.redirect(`/campgrounds/${newCamp._id}`);
+        res.redirect(`/campgrounds/${newCamp._id}`);
     }
     catch(e: any){
         req.flash("error", e.toString());
@@ -146,6 +146,9 @@ module.exports.campDelete = async(req: Request, res: Response) => {
         const deletedCamp = await Campground.findByIdAndDelete(id, {...req.body.campground});
         if(!deletedCamp){
           throw new Error();
+        }
+        for(let img of deletedCamp.images){
+               await cloudinary.uploader.destroy(img.filename);
         }
         req.flash("success", `${deletedCamp.title} Was Deleted`);
         res.redirect(`/campgrounds`)
