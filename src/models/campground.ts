@@ -7,11 +7,18 @@ interface Iimage{
    filename: string
 }
 
+interface IGeo{
+   type: string,
+   coordinates: number[]
+}
+
+
 interface ICampground{
     title: string,
     price: number,
     images: Iimage[],
     description: string,
+    geometry: IGeo,
     location: string,
     author: Types.ObjectId
     reviews: Types.ObjectId[];
@@ -26,6 +33,10 @@ const campgroundSchema = new Schema<ICampground>({
         filename: {type: String}
       }
    ],
+   geometry: {
+      type: {type: String, enum: ['Point'], required: true},
+      coordinates: {type: [Number], required: true}
+   },
    description: {type: String},
    location: {type: String},
    author: {
