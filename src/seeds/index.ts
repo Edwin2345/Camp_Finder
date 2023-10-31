@@ -6,7 +6,7 @@ const mbxGeocoding = require("@mapbox/mapbox-sdk/services/geocoding")
 const mapBoxToken = process.env.MAPBOX_TOKEN;
 
 
-const geoCoder = mbxGeocoding({accessToken: "pk.eyJ1IjoiZWR3aW4tMjM0NSIsImEiOiJjbG9kZTF3dnQwNTI0MmtueTJ6d24wNDRxIn0._BpqCbrsIkSaemzhJFHMmw"})
+const geoCoder = mbxGeocoding({accessToken: "HIDDEN"})
 
 
 //MONGO CONNECTION
