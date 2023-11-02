@@ -116,7 +116,7 @@ app.use("/", userRouter)
 
 //HOME ROUTE
 app.get('/', (req: Request, res: Response): void => {
-    res.redirect("/login")
+    res.render("home.ejs")
 });
 
 

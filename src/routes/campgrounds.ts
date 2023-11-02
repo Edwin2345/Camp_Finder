@@ -3,7 +3,7 @@ import { campgroundValidationSchema, joinErrors} from '../utils/validate_schema/
 import {ExpressError} from "../utils/ExpressError";
 import { wrapAsync } from '../utils/wrapAsync';
 const {isLoggedIn, isAuthorCampground} = require("../utils/middleware");
-const {campIndex, campNewForm, campEditForm, campShow, campNew, campUpdate, campDelete} = require("../controllers/campgrounds");
+const {campIndex, campNewForm, campEditForm, campShow, campNew, campUpdate, campDelete, campMine, campSearch} = require("../controllers/campgrounds");
 const campgroundRouter = express.Router();
 const multer  = require('multer')
 const {storage} = require("../cloudinary/index")
@@ -34,6 +34,14 @@ campgroundRouter.route("/new")
                    console.log(req.files);
                    res.redirect("/campgrounds")
                 })*/
+
+//search
+campgroundRouter.get("/search", wrapAsync(campSearch))
+
+
+//My Campgrounds page
+campgroundRouter.get("/my", isLoggedIn, wrapAsync(campMine))
+
 
 //Camp Edit Form
 campgroundRouter.get("/:id/edit", isLoggedIn, isAuthorCampground, wrapAsync(campEditForm));

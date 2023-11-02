@@ -18,7 +18,7 @@ interface Iimage{
 //##########################
 module.exports.campIndex = async(req: Request, res: Response) => {
     const campArr = await Campground.find();
-    res.render("campgrounds/index.ejs", {campArr});
+    res.render("campgrounds/index.ejs", {campArr , type: "all"});
 }
 
 
@@ -39,6 +39,29 @@ module.exports.campEditForm = async(req: Request, res: Response) => {
     catch(e){
         req.flash("error", "Campground Could Not Be Found");
         res.redirect("/campgrounds");
+    }
+}
+
+
+
+module.exports.campSearch= async(req: Request, res: Response) => {
+  const {option, query} = req.query;
+  let campArr = [];
+  if(option === "address"){
+    campArr =  await Campground.find({location: query});
+  }
+  else if(option === "name"){
+    campArr =  await Campground.find({title: query}); 
+  }
+  res.render("campgrounds/index.ejs", {campArr , type: "results"});
+}
+
+
+
+module.exports.campMine= async(req: Request, res: Response) => {
+    if(req.user){
+    const campArr = await Campground.find({author: req.user._id});
+      res.render("campgrounds/index.ejs", {campArr , type: "mine"});
     }
 }
 
@@ -108,6 +131,16 @@ module.exports.campUpdate = async(req: Request, res: Response) => {
         const updatedCamp = await Campground.findByIdAndUpdate(id, {...req.body.campground});
         if(!updatedCamp){
            throw new Error();
+        }
+        //Geocode new location
+        if(req.body.campground.location !== updatedCamp.location){
+            const geoResult = await geoCoder.forwardGeocode({
+                 query: req.body.campground.location,
+                 limit: 1
+             }).send();
+             if(geoResult){
+                 updatedCamp.geometry = geoResult.body.features[0].geometry;
+             }
         }
         //add images
         if(req.files){

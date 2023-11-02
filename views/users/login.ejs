@@ -1,25 +1,32 @@
 <% layout('./layout/boilerplate.ejs') %>
+<div class="container d-flex justify-content-center align-items-center">
 <div class="row">
-    <form class=" border border-black rounded p-5 col-lg-6 offset-lg-3 col-md-8 offset-md-2 form-validation mt-5" action="/login" method="post" novalidate>
-        <h1 class="text-center">Login</h1>
-        <section class="my-5">
-            <label class="form-label fw-bold fs-5" for="username">Username</label>
-            <input required class="form-control border border-black fw-medium" type="text" id="username" name="username">   
-            <div class="invalid-feedback">
-                Please enter a Username.
-            </div>    
-        </section>
-        <section class="my-5">
-            <label class="form-label fw-bold fs-5" for="password">Password</label>
-            <input required class="form-control border border-black fw-medium" type="password" id="password" name="password">
-            <div class="invalid-feedback">
-                Please enter a password.
-            </div>    
-        </section>
-        <button class="btn btn-success">Login</button>
-        <div class="text-center mt-3 fs-5 fw-semibold">
-            <span class="text-body-secondary">Not Registered?    </span> <a class="ms-2" href="/register">Sign Up</a>
+    <div class="col-md-8 offset-md-2 mb-3">
+       <div class="card shadow p-3 mb-4">
+        <img src="../../camp-login.jpg"  class="card-top" alt="">
+        <form class="form-validation" action="/login" method="post" novalidate>
+            <h1 class="text-center mt-3">Login</h1>
+            <section class="my-4">
+                <label class="form-label fw-bold fs-5" for="username">Username</label>
+                <input required class="form-control border border-black fw-medium" type="text" id="username" name="username">   
+                <div class="invalid-feedback">
+                    Please enter a Username.
+                </div>    
+            </section>
+            <section class="my-4">
+                <label class="form-label fw-bold fs-5" for="password">Password</label>
+                <input required class="form-control border border-black fw-medium" type="password" id="password" name="password">
+                <div class="invalid-feedback">
+                    Please enter a password.
+                </div>    
+            </section>
+            <button class="btn btn-lg btn-success mt-2">Login</button>
+            <div class="text-center mt-3 fs-md-5 fs-4 fw-semibold">
+                <span class="text-body-secondary">Not Registered?    </span> <a class="ms-2" href="/register">Sign Up</a>
+            </div>
+        </form>
         </div>
-    </form>
+   </div>
+</div>
 </div>
 
