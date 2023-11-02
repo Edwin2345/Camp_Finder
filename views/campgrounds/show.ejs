@@ -3,8 +3,6 @@
 
 <div class="row mb-5">
   <div class="col-md-6">
-  <!-- Map -->
-   <div id='map' style='width: 400px; height: 300px;'></div>
   <div class="card pt-2 px-2">
      <!-- CAROSEL -->
     <div id="carouselExample" class="carousel slide" data-ride="carousel">
@@ -49,9 +47,11 @@
   </div>
  </div>
   <div class="col-md-5 mt-3 ms-md-5">
+     <!-- Map -->
+     <div id='map' style='width: 100%; height: 300px; margin-bottom: 2rem;'></div>
     <% if (currentUser) { %>
     <h2 class="mb-4">Leave A Review</h2>
-    <form class="form-validation" action="/campgrounds/<%= camp._id %>/reviews/new" method="post" novalidate>
+    <form class="form-validation mb-2" action="/campgrounds/<%= camp._id %>/reviews/new" method="post" novalidate>
       <div class="mb-3">
         <fieldset class="starability-basic mt-2">
           <legend  class="form-label fs-5 fw-bold">Rating:</legend>
@@ -78,7 +78,7 @@
           Please enter a review
         </div>   
       </div>
-      <button class="btn btn-success mt-2">Submit</button>
+      <button class="btn btn-success mt-2 mb-3">Submit</button>
     </form>
     <% } %>
     <section class="mt-3">

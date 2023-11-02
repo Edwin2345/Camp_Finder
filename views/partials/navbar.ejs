@@ -7,8 +7,11 @@
       <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
         <div class="navbar-nav text-white">
           <a class="nav-link text-white fs-5" href="/">Home</a>
-          <a class="nav-link text-white fs-5" href="/campgrounds">Campgrounds</a>
-          <a class="nav-link text-white fs-5" href="/campgrounds/new">New Campground</a>
+          <a class="nav-link text-white fs-5 mx-2" href="/campgrounds">Campgrounds</a>
+          <a class="nav-link text-white fs-5 mx-2" href="/campgrounds/new">New Campground</a>
+          <% if (currentUser) { %>
+          <a class="nav-link text-white fs-5" href="/campgrounds/my">My Campgrounds</a>
+          <% } %>
         </div>
         <div class="navbar-nav text-white ms-auto">
           <% if (currentUser) { %>
